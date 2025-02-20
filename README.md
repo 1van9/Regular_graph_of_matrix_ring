@@ -1,4 +1,4 @@
-# Subgraphs_of_regular_graph
+# List of programs 
 
 - **parts11112.cpp** - programm finds multipart subgraph $K(1, 1, 1, 1, 2)$
 - **isomorphism.cpp** - check that Akbari sample does not equivalent to k(2, 1)
