@@ -313,7 +313,6 @@ Integer max(const Integer & a, const Integer & b) {
 }
 
 Integer sqrt(const Integer & x) {
-    // std::cout << "GO" << std::endl;
     Integer L = 0, R = x;
     while ((R - L) > Integer(1)) {
         Integer mid = (L + R) / Integer(2);
