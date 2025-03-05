@@ -477,7 +477,7 @@ int expand(const vec<Matrix<T>> & clique) {
 
 
 template<typename T>
-bool is_standart_automorphism(vec<Matrix<T>> & allm, std::map<int, int> & A) {
+bool is_standard_automorphism(vec<Matrix<T>> & allm, std::map<int, int> & A) {
     // i -> j
     // allm_j = U allm_{i} V
     // U^{-1} = allm_{i} V (allm_j)^-1   (1)
