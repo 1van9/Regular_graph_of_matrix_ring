@@ -7,6 +7,7 @@
 #include "basic_types/poly.h"
 #include "basic_types/integers.h"
 #include <set>
+#include <map>
 
 using Q = Frac<long long>;
 using Qll = Frac<Integer>;
@@ -48,6 +49,53 @@ void print(vec<Matrix<T>> & a) {
     for (auto e : a)
         std::cout << e << std::endl;
 }
+
+namespace samples {
+    template<typename T>
+    vec<Matrix<T>> Akbari() {
+        return {
+        Matrix<T>({{T(1), T(0)},
+              {T(0), T(1)}}),
+        Matrix<T>({{T(0), T(1)},
+              {T(1), T(0)}}),
+        Matrix<T>({{T(0), T(-1)},
+              {T(-1), T(0)}}),
+        Matrix<T>({{T(0), T(1)},
+              {T(-1), T(-2)}}),
+        Matrix<T>({{T(0), T(-1)},
+              {T(1), T(-2)}})
+        };
+    }
+    vec<Matrix<T>> k1(T n, T m) {
+        return {
+        Matrix<T>({{n, n},
+                   {n, m}}),
+        Matrix<T>({{n, n},
+                   {n, n + n - m}}),
+        Matrix<T>({{-n, n},
+                   {-n, m}}),
+        Matrix<T>({{-n, -n},
+                   {n, -m}}),   
+        Matrix<T>({{-n, -n},
+                   {-m - m - n, -m}})
+        };
+    }
+    vec<Matrix<T>> k2(T n, T m) {
+        return {
+        Matrix<T>({{n, n},
+                   {n, m}}),
+        Matrix<T>({{n, n},
+                   {n, n + n - m}}),
+        Matrix<T>({{-n, n},
+                   {-n, m}}),
+        Matrix<T>({{-n, -n},
+                   {n, -m}}),   
+        Matrix<T>({{-n, m + m - n},
+                   {-n, m}})
+        };
+    }
+};
+
 
 Rf from_poly_to_rf(const Poly<int> & x) {
     vec<Q> coefs;
@@ -177,7 +225,7 @@ bool isomorphic_subgraphs_2_by_2(const vec<Matrix<T>>& subg1, const vec<Matrix<T
             // 1 0 0 *
             // 0 1 0 *
             // 0 0 1 *
-            T det = lin_eq[0][3] - lin_eq[1][3] * lin_eq[2][3];
+            T det = -lin_eq[0][3] - lin_eq[1][3] * lin_eq[2][3];
             if (det) {
                 return true;
             }
@@ -362,7 +410,7 @@ vec<Matrix<T>> is_additionable_K4(const vec<Matrix<T>> & clique) {
         xs = addition::express_through_x(-linear_equations[0][4], T(0), 
                                          -linear_equations[1][4], T(0),
                                          -linear_equations[2][4], T(0),
-                                        clique[0]);
+                                         clique[0]);
         ys = {-linear_equations[0][4]};
         zs = {-linear_equations[1][4]};
         ts = {-linear_equations[2][4]};
@@ -423,6 +471,134 @@ int expand(const vec<Matrix<T>> & clique) {
         vec<Matrix<T>> add = is_additionable_K4(a);
         if (add.size() > 1)
             cnt++;
+    }
+    return cnt;
+}
+
+
+template<typename T>
+bool is_standart_automorphism(vec<Matrix<T>> & allm, std::map<int, int> & A) {
+    // i -> j
+    // allm_j = U allm_{i} V
+    // U^{-1} = allm_{i} V (allm_j)^-1   (1)
+
+    // V = (x y)
+    //     (z t)
+    // Have n ways, how to express U, in term of x, y, z, t
+    std::set<Matrix<T>> ways;
+    vec<Matrix<T>> M; // express U coefficients in term of x, y, z, t 
+    int n = 0;
+    for (auto [i, j] : A) {
+        Matrix<T> a = allm[i], b = allm[j].rev(); 
+        Matrix<T> U_coefficients({
+            {a[0][0] * b[0][0], a[0][0] * b[1][0], a[0][1] * b[0][0], a[0][1] * b[1][0]},
+            {a[0][0] * b[0][1], a[0][0] * b[1][1], a[0][1] * b[0][1], a[0][1] * b[1][1]},
+            {a[1][0] * b[0][0], a[1][0] * b[1][0], a[1][1] * b[0][0], a[1][1] * b[1][0]},
+            {a[1][0] * b[0][1], a[1][0] * b[1][1], a[1][1] * b[0][1], a[1][1] * b[1][1]}
+        });
+        M.push_back(U_coefficients);
+        n++;
+    }
+    int m = M[0].size();
+    Matrix<T> linear_equasions((n - 1) * m, 4); // equasions on x, y, z, t
+    for (int i = 1; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            for (int k = 0; k < M[i][j].size(); k++) {
+                // from U_0 - U_i = 0, where U_i = B_{p_i} V (A_i)^-1, we have:
+                linear_equasions[(i - 1) * m + j][k] = M[0][j][k] - M[i][j][k]; 
+            }
+        }
+    }
+    linear_equasions.Gause();
+    ways.insert(linear_equasions);
+    
+    M.clear();
+    // the same for tansposition
+    for (auto [i, j] : A) {
+        Matrix<T> a = allm[i].t(), b = allm[j].rev(); 
+        Matrix<T> U_coefficients({
+            {a[0][0] * b[0][0], a[0][0] * b[1][0], a[0][1] * b[0][0], a[0][1] * b[1][0]},
+            {a[0][0] * b[0][1], a[0][0] * b[1][1], a[0][1] * b[0][1], a[0][1] * b[1][1]},
+            {a[1][0] * b[0][0], a[1][0] * b[1][0], a[1][1] * b[0][0], a[1][1] * b[1][0]},
+            {a[1][0] * b[0][1], a[1][0] * b[1][1], a[1][1] * b[0][1], a[1][1] * b[1][1]}
+        });
+        M.push_back(U_coefficients);
+    }
+    for (int i = 1; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            for (int k = 0; k < M[i][j].size(); k++) {
+                // from U_0 - U_i = 0, where U_i = B_{p_i} V (A_i)^-1, we have:
+                linear_equasions[(i - 1) * m + j][k] = M[0][j][k] - M[i][j][k]; 
+            }
+        }
+    }
+    linear_equasions.Gause();
+    ways.insert(linear_equasions);
+
+    // check is there non zero solutions of x, y, z, t, which give V from GL_2
+    int cnt = 0;
+    for (auto lin_eq : ways) {
+        if (lin_eq[3][3] == T(1)) {
+            // 1 0 0 0
+            // 0 1 0 0 
+            // 0 0 1 0
+            // 0 0 0 1
+            continue;
+        }
+        if (!lin_eq[2][2] && lin_eq[2][3] == T(1)) {
+            //     0 0           0
+            // 0 0 1 0     0 1 * 0
+            // 0 0 0 1     0 0 0 1
+            if (lin_eq[1][2] == T(1) && !lin_eq[1][1])
+                continue;
+            if (!lin_eq[1][2])
+                continue;
+            cnt++;
+            continue;
+        }
+        if (lin_eq[2][2] == T(1)) {
+            // 1 0 0 *
+            // 0 1 0 *
+            // 0 0 1 *
+            T det = -lin_eq[0][3] - lin_eq[1][3] * lin_eq[2][3];
+            if (det)
+                cnt++;
+            continue;
+        }
+        if (!lin_eq[0][0]) {
+            // 0 1 0 *     0 1 * 0     0 1 * *     0 0 1 0     0 0 1 0    0 0 0 1    0 0 0 0
+            // 0 0 1 *     0 0 0 1     0 0 0 0     0 0 0 1     0 0 0 0    0 0 0 0    0 0 0 0
+            if (!lin_eq[1][2] && lin_eq[1][3] == T(1)) {
+                if (lin_eq[0][1] == T(1) && !lin_eq[0][2]) {
+                    cnt++;
+                }
+                continue;
+            }
+            cnt++;
+            continue;
+        }
+        // 1 0 * *     1 * 0 *     1 * * 0   1 * * *
+        // 0 1 * *     0 0 1 *     0 0 0 1   0 0 0 0
+        if (lin_eq[1][1] == T(1)) {
+            // 1 0 * *
+            // 0 1 * * 
+            if (!lin_eq[0][3] && !lin_eq[1][2] && lin_eq[0][2] == lin_eq[1][3]) {
+                continue;
+            }
+            cnt++;
+            continue;
+        }
+        if (lin_eq[1][2] == T(1)) {
+            // 1 * 0 *
+            // 0 0 1 *
+            if (!lin_eq[0][1] && (lin_eq[0][3] == lin_eq[1][3])) {
+                continue;
+            }
+            cnt++;
+            continue;
+        }
+        cnt++;
+        continue;
     }
     return cnt;
 }
