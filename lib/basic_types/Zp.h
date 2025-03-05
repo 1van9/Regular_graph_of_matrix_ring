@@ -19,6 +19,9 @@ struct Z {
     Z operator - (const Z & other) const {
         return Z(x - other.x);
     }
+    Z operator - () const {
+        return Z(-x);
+    }
     Z operator += (const Z & other) {
         x += other.x;
         if (x >= P)
@@ -54,6 +57,18 @@ struct Z {
     Z operator /= (const Z & other) {
         *this = (*this / other);
         return (*this);
+    }
+    bool operator < (const Z & other) const {
+        return x < other.x;
+    }
+    bool operator > (const Z & other) const {
+        return x > other.x;
+    }
+    bool operator <= (const Z & other) const {
+        return x <= other.x;
+    }
+    bool operator >= (const Z & other) const {
+        return x >= other.x;
     }
     operator bool() const {
         return x;
