@@ -5,8 +5,8 @@
 
 using namespace std;
 
-using feild = Frac<Integer>;
-using mat = Matrix<feild>;
+using field = Frac<Integer>;
+using mat = Matrix<field>;
 
 int N = 2; // matrixes N x N
 int expnd = 5; // find clique: expand(clique) = expnd
@@ -50,7 +50,7 @@ long long cnt = 0;
 const vec<int> numder_of_ops = {100, 100, 20000, 20000}; // number of steps during random clique generation 
 
 
-void random_cliques_search(vec<mat> & clique, const vec<feild> & nums, mt19937 & gen) {
+void random_cliques_search(vec<mat> & clique, const vec<field> & nums, mt19937 & gen) {
     if (findcl)
         return;
     if (clique.size() < 4) {
@@ -143,7 +143,7 @@ void generate_clique_for_2x2(vec<int> & clique, const vec<mat> & small_matrices,
 
 int main() {
     if (random_search) {
-        vector<feild> nums;
+        vector<field> nums;
         for (int i = MIND; i <= MAXD; i++) {
             for (int j = MINN; j <= MAXN; j++) {
                 nums.emplace_back(j, i);
