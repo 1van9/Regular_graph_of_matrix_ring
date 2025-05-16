@@ -41,7 +41,7 @@ void GetCliques(Clique3 & curr, int i) {
 int main() {
     vec<Z3> all_nums({0, 1, 2});
     Gl = gen_matrices(all_nums, 2);    
-    cout << "Number of matrix : " <<  Gl.size() << endl;
+    cout << "Number of matrices : " <<  Gl.size() << endl;
     
     Clique3 curr;
     GetCliques(curr, 0);
