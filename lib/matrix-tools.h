@@ -8,6 +8,7 @@
 #include "basic_types/integers.h"
 #include <set>
 #include <map>
+#include <random>
 
 using Q = Frac<long long>;
 using Qll = Frac<Integer>;
@@ -23,28 +24,8 @@ using CliqueQ = vec<MatQ>;
 using Clique3 = vec<Mat3>;
 
 
-Rf x({Q(0), Q(1)});
-
-MatQ substitute_point(const MatRf & a, const Q & v) {
-    MatQ b(a.n, a.m);
-    for (int i = 0; i < a.n; i++) {
-        for (int j = 0; j < a.m; j++) {
-            b[i][j] = a[i][j].fi(v) / a[i][j].se(v);
-        }
-    }
-    return b;
-}
-
-CliqueQ substitute_point(const CliqueRf & a, const Q & v) {
-    CliqueQ b(a.size());
-    for (int i = 0; i < a.size(); i++) {
-        b[i] = substitute_point(a[i], v);
-    }
-    return b;
-}
-
 template<typename T>
-void print(vec<Matrix<T>> & a) {
+void print(const vec<Matrix<T>> & a) {
     std::cout << "print matrixes : " << std::endl; 
     for (auto e : a)
         std::cout << e << std::endl;
@@ -66,6 +47,8 @@ namespace samples {
               {T(1), T(-2)}})
         };
     }
+
+    template<typename T>
     vec<Matrix<T>> k1(T n, T m) {
         return {
         Matrix<T>({{n, n},
@@ -80,6 +63,8 @@ namespace samples {
                    {-m - m - n, -m}})
         };
     }
+    
+    template<typename T>
     vec<Matrix<T>> k2(T n, T m) {
         return {
         Matrix<T>({{n, n},
@@ -137,7 +122,18 @@ vec<Matrix<T>> gen_matrices(const vec<T> & nums, int N) {
 }
 
 template<typename T>
-bool isomorphic_subgraphs_2_by_2(const vec<Matrix<T>>& subg1, const vec<Matrix<T>>& subg2) {
+Matrix<T> random_matrix(const vec<T> & nums, int N, std::mt19937& gen) {
+    Matrix<T> a(N, N);
+    while (!a.det()) {
+        for (int i = 0; i < N; i++)
+            for (int j = 0; j < N; j++)
+                a[i][j] = nums[gen() % nums.size()];
+    }
+    return a;
+}
+
+template<typename T>
+bool equivalent_subgraphs_2_by_2(const vec<Matrix<T>>& subg1, const vec<Matrix<T>>& subg2) {
     if (subg1.size() != subg2.size())
         return false;
     int n = subg1.size();
@@ -172,7 +168,7 @@ bool isomorphic_subgraphs_2_by_2(const vec<Matrix<T>>& subg1, const vec<Matrix<T
                     linear_equasions[(i - 1) * (M[i].size()) + j][k] = M[0][j][k] - M[i][j][k]; }
             }
         }
-        linear_equasions.Gause();
+        linear_equasions.Gauss();
         ways.insert(linear_equasions);
     } while (next_permutation(p.begin(), p.end()));
 
@@ -197,10 +193,60 @@ bool isomorphic_subgraphs_2_by_2(const vec<Matrix<T>>& subg1, const vec<Matrix<T
                 }
             }
         }
-        linear_equasions.Gause();
+        linear_equasions.Gauss();
+        ways.insert(linear_equasions);
+    } while (next_permutation(p.begin(), p.end()));
+    
+    // the same for reversion
+    do {
+        vec<Matrix<T>> M; // express U coefficients in term of x, y, z, t 
+        for (int i = 0; i < n; i++) {
+            Matrix<T> A = subg2[p[i]], B = subg1[i]; 
+            Matrix<T> U_coefficients({
+                {A[0][0] * B[0][0], A[0][0] * B[1][0], A[0][1] * B[0][0], A[0][1] * B[1][0]},
+                {A[1][0] * B[0][0], A[1][0] * B[1][0], A[1][1] * B[0][0], A[1][1] * B[1][0]},
+                {A[0][0] * B[0][1], A[0][0] * B[1][1], A[0][1] * B[0][1], A[0][1] * B[1][1]},
+                {A[1][0] * B[0][1], A[1][0] * B[1][1], A[1][1] * B[0][1], A[1][1] * B[1][1]}
+            }); 
+            M.push_back(U_coefficients);
+        }
+        Matrix<T> linear_equasions((n - 1) * M[0].size(), 4); // equasions on x, y, z, t
+        for (int i = 1; i < n; i++) {
+            for (int j = 0; j < M[i].size(); j++) {
+                for (int k = 0; k < M[i][j].size(); k++) {
+                    // from U_0 - U_i = 0, where U_i = B_{p_i} V (A_i)^-1, we have:
+                    linear_equasions[(i - 1) * (M[i].size()) + j][k] = M[0][j][k] - M[i][j][k]; }
+            }
+        }
+        linear_equasions.Gauss();
         ways.insert(linear_equasions);
     } while (next_permutation(p.begin(), p.end()));
 
+    do {
+        vec<Matrix<T>> M;
+        for (int i = 0; i < n; i++) {
+            Matrix<T> A = subg2[p[i]], B = subg1[i].t();
+            Matrix<T> U_coefficients({
+                {A[0][0] * B[0][0], A[0][0] * B[1][0], A[0][1] * B[0][0], A[0][1] * B[1][0]},
+                {A[1][0] * B[0][0], A[1][0] * B[1][0], A[1][1] * B[0][0], A[1][1] * B[1][0]},
+                {A[0][0] * B[0][1], A[0][0] * B[1][1], A[0][1] * B[0][1], A[0][1] * B[1][1]},
+                {A[1][0] * B[0][1], A[1][0] * B[1][1], A[1][1] * B[0][1], A[1][1] * B[1][1]}
+            }); 
+            M.push_back(U_coefficients);
+        }
+        Matrix<T> linear_equasions((n - 1) * M[0].size(), 4);
+        for (int i = 1; i < n; i++) {
+            for (int j = 0; j < M[i].size(); j++) {
+                for (int k = 0; k < M[i][j].size(); k++) {
+                    linear_equasions[(i - 1) * (M[i].size()) + j][k] = M[0][j][k] - M[i][j][k];
+                }
+            }
+        }
+        linear_equasions.Gauss();
+        ways.insert(linear_equasions);
+    } while (next_permutation(p.begin(), p.end()));
+
+    
     // check is there non zero solutions of x, y, z, t, which give V from GL_2
 
     for (auto lin_eq : ways) {
@@ -267,8 +313,8 @@ bool isomorphic_subgraphs_2_by_2(const vec<Matrix<T>>& subg1, const vec<Matrix<T
 }
 
 namespace addition {
-    bool only_R = false;
-    bool case_of_Q = false;
+    int case_of_Q_R_C = 0;
+    
 
     template<typename T>
     vec<T> solution_of_quadratic_eq(T A, T B, T C, char var) {
@@ -283,18 +329,18 @@ namespace addition {
         if (!D) {
             return {-B / (A + A)};
         }
+        if (case_of_Q_R_C == 2) {
+            return {(-B + sqrt(D)) / (A + A), (-B - sqrt(D)) / (A + A)};
+        }
         if (D < T(0)) {
             return {};
         }
         T D_ = sqrt(D);
         if (D_ * D_ == D) {
-            T x1 = (-B + D_) / (A + A);
-            T x2 = (-B - D_) / (A + A);
-            return {x1, x2};
+            return {(-B + sqrt(D)) / (A + A), (-B - sqrt(D)) / (A + A)};
         } else {
-            if (case_of_Q) {
-                std::cout << "Not additionable in Q but maybe in R" << std::endl;
-                only_R = true;
+            if (case_of_Q_R_C == 1) {
+                return {(-B + sqrt(D)) / (A + A), (-B - sqrt(D)) / (A + A)};
             }
             return {};
         }
@@ -362,7 +408,6 @@ namespace addition {
         vec<Matrix<T>> ans(answer.begin(), answer.end());
         return ans;
     }
-
 };
 
 // addition K4 to K(1, 1, 1, 1, 2)|K(1, 1, 1, 1, 1)|K(1, 1, 1, 1, 0)
@@ -386,7 +431,7 @@ vec<Matrix<T>> is_additionable_K4(const vec<Matrix<T>> & clique) {
         linear_equations[i - 1][4] = clique[i].det() - d;
     }
     // in clique this linear equasions always independent
-    linear_equations.Gause();
+    linear_equations.Gauss();
     if (!linear_equations[2][0] && !linear_equations[2][1] &&
         !linear_equations[2][2] && !linear_equations[2][3]) {    
         // * * * * *     
@@ -468,7 +513,7 @@ int expand(const vec<Matrix<T>> & clique) {
     for (int i = 0; i < 5; i++) {
         vec<Matrix<T>> a = clique;
         a.erase(a.begin() + i);
-        vec<Matrix<T>> add = is_additionable_K4(a);
+        vec<Matrix<T>> add = is_additionable_K4(a); 
         if (add.size() > 1)
             cnt++;
     }
@@ -477,7 +522,7 @@ int expand(const vec<Matrix<T>> & clique) {
 
 
 template<typename T>
-bool is_standard_automorphism(vec<Matrix<T>> & allm, std::map<int, int> & A) {
+bool is_standard_automorphism(vec<Matrix<T>> & allm, std::map<int, int> & A, bool is_inv = true) {
     // i -> j
     // allm_j = U allm_{i} V
     // U^{-1} = allm_{i} V (allm_j)^-1   (1)
@@ -509,7 +554,8 @@ bool is_standard_automorphism(vec<Matrix<T>> & allm, std::map<int, int> & A) {
             }
         }
     }
-    linear_equasions.Gause();
+    linear_equasions.Gauss();
+    // std::cout << "linear equasons : " << linear_equasions << std::endl;
     ways.insert(linear_equasions);
     
     M.clear();
@@ -532,9 +578,54 @@ bool is_standard_automorphism(vec<Matrix<T>> & allm, std::map<int, int> & A) {
             }
         }
     }
-    linear_equasions.Gause();
+    linear_equasions.Gauss();
     ways.insert(linear_equasions);
-
+    M.clear();
+    // the same for reversal
+    if (is_inv) {
+        for (auto [i, j] : A) {
+            Matrix<T> a = allm[i].rev(), b = allm[j].rev(); 
+            Matrix<T> U_coefficients({
+                {a[0][0] * b[0][0], a[0][0] * b[1][0], a[0][1] * b[0][0], a[0][1] * b[1][0]},
+                {a[0][0] * b[0][1], a[0][0] * b[1][1], a[0][1] * b[0][1], a[0][1] * b[1][1]},
+                {a[1][0] * b[0][0], a[1][0] * b[1][0], a[1][1] * b[0][0], a[1][1] * b[1][0]},
+                {a[1][0] * b[0][1], a[1][0] * b[1][1], a[1][1] * b[0][1], a[1][1] * b[1][1]}
+            });
+            M.push_back(U_coefficients);
+        }
+        for (int i = 1; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                for (int k = 0; k < M[i][j].size(); k++) {
+                    // from U_0 - U_i = 0, where U_i = B_{p_i} V (A_i)^-1, we have:
+                    linear_equasions[(i - 1) * m + j][k] = M[0][j][k] - M[i][j][k]; 
+                }
+            }
+        }
+        linear_equasions.Gauss();
+        ways.insert(linear_equasions);
+        M.clear();
+        // the same for reversal tansposition
+        for (auto [i, j] : A) {
+            Matrix<T> a = allm[i].t().rev(), b = allm[j].rev(); 
+            Matrix<T> U_coefficients({
+                {a[0][0] * b[0][0], a[0][0] * b[1][0], a[0][1] * b[0][0], a[0][1] * b[1][0]},
+                {a[0][0] * b[0][1], a[0][0] * b[1][1], a[0][1] * b[0][1], a[0][1] * b[1][1]},
+                {a[1][0] * b[0][0], a[1][0] * b[1][0], a[1][1] * b[0][0], a[1][1] * b[1][0]},
+                {a[1][0] * b[0][1], a[1][0] * b[1][1], a[1][1] * b[0][1], a[1][1] * b[1][1]}
+            });
+            M.push_back(U_coefficients);
+        }
+        for (int i = 1; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                for (int k = 0; k < M[i][j].size(); k++) {
+                    // from U_0 - U_i = 0, where U_i = B_{p_i} V (A_i)^-1, we have:
+                    linear_equasions[(i - 1) * m + j][k] = M[0][j][k] - M[i][j][k]; 
+                }
+            }
+        }
+        linear_equasions.Gauss();
+        ways.insert(linear_equasions);
+    }
     // check is there non zero solutions of x, y, z, t, which give V from GL_2
     int cnt = 0;
     for (auto lin_eq : ways) {
