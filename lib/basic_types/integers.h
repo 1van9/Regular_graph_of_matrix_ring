@@ -182,6 +182,15 @@ struct Integer {
         sign = n.sign;
         return *this;
     }
+    Integer operator = (long long x) {
+        if (x < 0) {
+            sign = -1;
+            x = -x;
+        }
+        digits = nm(x, system);
+        update();
+        return *this;
+    }
     Integer operator + (const Integer & n) const {
         if (sign == n.sign)
             return Integer(sm(digits, n.digits, system), sign);
@@ -262,10 +271,14 @@ struct Integer {
     operator bool() const {
         return digits.size();
     }
+    operator int() const {
+        if (!(*this)) return 0;
+        return sign * digits[0];
+    }
     
     vec<long long> digits;
     int sign = 1;
-    const long long system = 1 << 16;
+    const long long system = 1 << 29;
 };
 
 std::istream & operator>>(std::istream & in, Integer & n) {
@@ -313,13 +326,13 @@ Integer max(const Integer & a, const Integer & b) {
 }
 
 Integer sqrt(const Integer & x) {
-    Integer L = 0, R = x;
+    Integer L = -1, R = x;
     while ((R - L) > Integer(1)) {
         Integer mid = (L + R) / Integer(2);
-        if (mid * mid <= x)
+        if (mid * mid < x)
             L = mid;
         else
             R = mid;
     }
-    return L;
+    return R;
 }
