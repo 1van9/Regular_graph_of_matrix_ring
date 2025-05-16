@@ -8,8 +8,8 @@ using namespace std;
 const int prime = 4; // 3, 5, 7
 const int N = (prime * prime - 1) * (prime * prime - prime);
 
-using feild = Z4; // Z<prime>
-using mat = Matrix<feild>;
+using field = Z4; // Z<prime>
+using mat = Matrix<field>;
 
 bool connection[N][N];
 vec<mat> all;
@@ -106,7 +106,7 @@ void go() {
 
 
 void find_all_aut() {
-    mat E = mat({{1, 0}, {0, 1}});
+    mat E = mat({{field(1), field(0)}, {field(0), field(1)}});
     for (int i = 0; i < N; i++)
         perm[i] = -1;
     add(indexes[E], indexes[E]);
@@ -115,10 +115,10 @@ void find_all_aut() {
 }
 
 int main() {
-    vec<feild> nums;
+    vec<field> nums;
     for (int i = 0; i < prime; i++)
         nums.emplace_back(i);
-    all = gen_matrices<feild>(nums, 2);
+    all = gen_matrices<field>(nums, 2);
     assert(N == all.size());
     cout << "Number of matrices: " << N << endl;
     
