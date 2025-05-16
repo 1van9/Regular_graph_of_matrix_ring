@@ -122,7 +122,7 @@ struct Matrix {
                 b.a[i][j] = a[j][i];
         return b;
     }
-    T Gause() {
+    std::pair<T, size_t> Gauss() {
         size_t curr_string = 0;
         T det;
         det = 1;
@@ -150,13 +150,22 @@ struct Matrix {
         }
         if (curr_string != n) 
             det = 0;
-        return det;
+        return {det, curr_string};
     }
     T det() const {
+        if (n != m)
+            return T(0);
         if (n == 2 && m == 2)
             return a[0][0] * a[1][1] - a[0][1] * a[1][0];
+        if (n == 3 && m == 3)
+            return (a[0][0] * a[1][1] * a[2][2] + a[0][1] * a[1][2] * a[2][0] + a[0][2] * a[1][0] * a[2][1] -
+                   (a[0][2] * a[1][1] * a[2][0] + a[0][1] * a[1][0] * a[2][2] + a[0][0] * a[1][2] * a[2][1]));
         Matrix copy_a = a;
-        return copy_a.Gause();
+        return copy_a.Gauss().first;
+    }
+    size_t rk() const {
+        Matrix copy_a = a;
+        return copy_a.Gauss().second;
     }
     Matrix rev() const {
         Matrix b(n, 2 * n);
@@ -165,7 +174,7 @@ struct Matrix {
             for (size_t j = 0; j < n; j++)
                 b.a[i][j] = a[i][j];
         }
-        T det = b.Gause();
+        T det = b.Gauss().first;
         assert(det);
         Matrix res(n, n);
         for (size_t i = 0; i < n; i++)
