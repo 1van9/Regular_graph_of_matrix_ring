@@ -58,6 +58,12 @@ struct Z {
         *this = (*this / other);
         return (*this);
     }
+    bool operator == (const Z & other) const {
+        return x == other.x;
+    }
+    bool operator != (const Z & other) const {
+        return x != other.x;
+    }
     bool operator < (const Z & other) const {
         return x < other.x;
     }
@@ -73,7 +79,10 @@ struct Z {
     operator bool() const {
         return x;
     }
-    
+    operator int() const {
+        return x;
+    }
+
     long long x;
 };
 
@@ -97,4 +106,13 @@ void swap(Z<P> & a, Z<P> & b) {
     a.x ^= b.x;
     b.x ^= a.x;
     a.x ^= b.x;
+}
+
+template<long long P>
+Z<P> sqrt(Z<P> & a) {
+    for (int i = 0; i < P; i++) {
+        if (i * i % P == a.x)
+            return Z<P>(i);
+    }
+    return Z<P>(0);
 }
