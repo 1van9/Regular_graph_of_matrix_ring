@@ -16,11 +16,10 @@ void PrintClique(const Clique3 & a) {
 vector<Mat3> Gl;
 
 vector<Clique3> all_max_cliques;
-int max_ans = 5;
-
+int max_cl_size = 5;
 
 void GetCliques(Clique3 & curr, int i) {
-    if (curr.size() == max_ans) {
+    if (curr.size() == max_cl_size) {
         all_max_cliques.push_back(curr);
         return;
     }
@@ -39,9 +38,6 @@ void GetCliques(Clique3 & curr, int i) {
     }
 }
 
-
-
-
 int main() {
     vec<Z3> all_nums({0, 1, 2});
     Gl = gen_matrices(all_nums, 2);    
@@ -52,7 +48,7 @@ int main() {
     cout << "Number of cliques : " << all_max_cliques.size() << endl;
   
     for (int i = 1; i < all_max_cliques.size(); i++) {
-        if (!isomorphic_subgraphs_2_by_2(all_max_cliques[0], all_max_cliques[i])) {
+        if (!equivalent_subgraphs_2_by_2(all_max_cliques[0], all_max_cliques[i])) {
             cout << "Not equivalent cliques:" << endl;
             PrintClique(all_max_cliques[0]);
             PrintClique(all_max_cliques[i]);
