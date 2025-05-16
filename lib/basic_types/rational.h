@@ -23,8 +23,9 @@ struct Frac {
             fi = -fi, se = -se;
     }
     Frac() : fi(0), se(1) {}
-    Frac(const T & x, const T & y) : fi(x), se(y) {
-        upd();
+    Frac(const T & x, const T & y, bool already_upd = false) : fi(x), se(y) {
+        if (!already_upd)
+            upd();
     }
     Frac(const T & x) : fi(x), se(1) {
         upd();
