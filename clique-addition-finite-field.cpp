@@ -7,15 +7,15 @@ using namespace std;
 const int prime = 19; // 47, 41, 29, 23, 17, 13, 11, 7, 5 -- no examples
 // 43, 37, 31, 19 - expand 3 exists
 
-using feild = Z<prime>;
-using mat = Matrix<feild>;
+using field = Z<prime>;
+using mat = Matrix<field>;
 
 int expnd = 3;
 int N = 2;
 bool findcl = false;
 const int sm_mat_sz = 10000;
 long long cnt = 0;
-mat E = mat({{feild(1), feild(0)}, {feild(0), feild(1)}});
+mat E = mat({{field(1), field(0)}, {field(0), field(1)}});
 
 void generate_clique_for_2x2(vec<int> & clique, const vec<mat> & small_matrices, int last_index, 
                              const vec<bitset<sm_mat_sz>> & g, const bitset<sm_mat_sz> & neighbours) {
@@ -67,16 +67,16 @@ void generate_clique_for_2x2(vec<int> & clique, const vec<mat> & small_matrices,
 
 
 int main() {
-    vector<feild> nums;
+    vector<field> nums;
     for (int i = 0; i < prime; i++)
         nums.emplace_back(i);
 
     auto all_matrixes = gen_matrices(nums, N);
     vec<mat> E2s;
     for (int l = 1; l < prime; l++)
-        if ((feild(1)/feild(l)).x >= feild(l).x)
-            E2s.push_back(mat({{feild(-1), feild(0)}, {feild(0), feild(l)}}));
-    E2s.push_back(mat({{feild(-1), feild(1)}, {feild(0), feild(-1)}}));
+        if ((field(1)/field(l)).x >= field(l).x)
+            E2s.push_back(mat({{field(-1), field(0)}, {field(0), field(l)}}));
+    E2s.push_back(mat({{field(-1), field(1)}, {field(0), field(-1)}}));
 
     for (mat E2 : E2s) {
         if (findcl)
