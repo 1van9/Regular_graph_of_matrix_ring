@@ -108,6 +108,18 @@ struct Poly {
         *this = (*this) * p;
         return *this;
     }
+    Poly operator^ (int k) {
+        if (k == 0)
+            return Poly(1);
+        Poly f = (*this)^(k/2);
+        if (k & 1)
+            return (*this) * f * f;
+        return f * f;
+    }
+    Poly operator ^=(int k) {
+        *this = (*this) ^ k;
+        return *this;
+    }
     std::pair<Poly, Poly> long_division(const Poly & p) const {
         Poly remainder = *this;
         Poly quotient;
