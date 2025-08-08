@@ -7,3 +7,5 @@
 - `program equivalent-cliques.cpp` - A program to verify that all cliques in $\mathbb{Z}_3$ are equivalent.
 
 - `program automorphism-search.cpp` - A program to verify that all automorphisms in $\Gamma_2(\mathbb{F}_2)$, $\Gamma_2(\mathbb{F}_3)$, $\Gamma_2(\mathbb{F}_4)$, and $\Gamma_2(\mathbb{F}_5)$ are standard.
+
+- `program clique-search.cpp` - A program for finding clique size 14 in $\Gamma_3(\mathbb{F})$.
